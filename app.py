@@ -152,9 +152,9 @@ def generate_frames():
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 
-# --- Run the App ---
-if __name__ == '__main__':
-    app.run(debug=True)
+# # --- Run the App ---
+# if __name__ == '__main__':
+#     app.run(debug=True)
 
 
 
