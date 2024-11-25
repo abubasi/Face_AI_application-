@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background: url('/static/bc.jpg') no-repeat center center;
+            background-size: cover;
+            color: white;
+        }
+        video, img {
+            margin-top: 20px;
+            border: 2px solid white;
+            border-radius: 10px;
+            width: 95%;
+        }
+        button {
+            position: absolute;
+            bottom: 250px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #66bb6a;
+        }
+        .stop-button {
+            position: absolute;
+            bottom: 40px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #dc3545;
+        }
+        .stop-button:hover {
+            background: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <h1>Face Recognition Application</h1>
+    <div>
+        <img id="videoFeed" src="" alt="Video Feed" style="display: none;">
+    </div>
+    <button id="startButton" onclick="startWebcam()">Start Webcam</button>
+    <button id="stopButton" class="stop-button" onclick="stopWebcam()" style="display: none;">Stop Webcam</button>
+
+
+    <script>
+        async function startWebcam() {
+            try {
+                const response = await fetch('/start', { method: 'POST' });
+                if (response.ok) {
+                    alert("Webcam started successfully.");
+                    document.getElementById('videoFeed').src = "/video_feed";
+                    document.getElementById('videoFeed').style.display = "block";
+                    document.getElementById('startButton').style.display = "none";
+                    document.getElementById('stopButton').style.display = "inline-block";
+                } else {
+                    alert("Failed to start the webcam.");
+                }
+            } catch (error) {
+                console.error("Error starting webcam:", error);
+                alert("An error occurred while starting the webcam.");
+            }
+        }
+
+        async function stopWebcam() {
+            try {
+                const response = await fetch('/stop', { method: 'POST' });
+                if (response.ok) {
+                    alert("Webcam stopped successfully.");
+                    document.getElementById('videoFeed').src = "";
+                    document.getElementById('videoFeed').style.display = "none";
+                    document.getElementById('stopButton').style.display = "none";
+                    document.getElementById('startButton').style.display = "inline-block";
+                } else {
+                    alert("Failed to stop the webcam.");
+                }
+            } catch (error) {
+                console.error("Error stopping webcam:", error);
+                alert("An error occurred while stopping the webcam.");
+            }
+        }
+    </script>
+</body>
+</html>

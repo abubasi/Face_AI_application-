@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Face Capture</title>
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative; /* Ensure proper stac king for pseudo-elements */
+    background: url('/static/bc1.jpg') no-repeat center center;/* Correct path for Flask static folder */
+    background-size: cover;
+    color: white;
+}
+
+/* Cool Background Animation */
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    z-index: 1;
+    filter: blur(10px);
+    animation: gradient 6s infinite alternate;
+    pointer-events: none; /* Ensure the user can interact with content below */
+}
+
+/* Gradient Animation */
+@keyframes gradient {
+    0% {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    }
+    50% {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.1));
+    }
+    100% {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    }
+}
+
+
+        @keyframes gradient {
+            0% {
+                background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            }
+            100% {
+                background: linear-gradient(225deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            }
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            color: #f3f3f3;
+        }
+
+        h3{
+            margin-top: 30px;
+        }
+
+        p {
+            font-size: 1rem;
+            color: #cccccc;
+            margin-bottom: 20px;
+        }
+
+        /* Input & Button Styles */
+        form input {
+            padding: 10px 15px;
+            width: 70%;
+            border-radius: 25px;
+            border: 2px solid #fff;
+            outline: none;
+            background: transparent;
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        form button {
+            display: block;
+            padding: 12px 25px;
+            background: #ff6f61;
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 80%;
+            margin: 10px auto;
+        }
+
+        form button:hover {
+            background: #ff856a;
+        }
+
+        /* Control Buttons */
+        .controls button {
+            padding: 12px 20px;
+            background: #4caf50;
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin: 5px;
+        }
+
+        .controls button:hover {
+            background: #66bb6a;
+        }
+
+        #status {
+            margin-top: 15px;
+            font-size: 1.1rem;
+        }
+
+        #notification {
+            margin-top: 10px;
+            color: #ffdf6e;
+            font-weight: bold;
+        }
+
+        #frame {
+            margin-top: 20px;
+            width: 90%;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌟 Live Face Capture App 🌟</h1>
+        <p>Enter your name below to start capturing your beautiful face.</p>
+        <form id="userForm">
+            <input type="text" id="name" name="name" placeholder="Enter your name" required>
+            <button type="submit">Initialize</button>
+            <h3><a href="{{ url_for('next_page') }}" style="text-decoration: none; color: white">Click here to Redirecting AI page</a></h3>
+        </form>
+
+        <div id="controls" class="controls" style="display: none;">
+            <button onclick="startCapture()">Start Capturing</button>
+            <button onclick="stopCapture()">Stop Capturing</button>
+            <p id="status"></p>
+            <div id="notification"></div>
+            <p><a href="{{ url_for('next_page') }}" style="text-decoration: none; color: white;">Y're Already done click here </a></p>
+
+            <!-- <img id="frame" src="/capture" alt="Webcam Stream"> -->
+        </div>
+    </div>
+
+
+    <script>
+        const userForm = document.getElementById('userForm');
+        const controls = document.getElementById('controls');
+        const statusText = document.getElementById('status');
+        const notification = document.getElementById('notification');
+
+        let captureInterval;
+
+        userForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+
+            const response = await fetch('/initialize', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `name=${encodeURIComponent(name)}`
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                alert(result.message);
+                controls.style.display = 'block';
+            } else {
+                alert(result.error);
+            }
+        });
+
+        async function startCapture() {
+            const response = await fetch('/start', { method: 'POST' });
+            const result = await response.json();
+            if (response.ok) {
+                statusText.textContent = "Capturing...";
+                notification.textContent = "";
+                captureInterval = setInterval(checkStatus, 1000);
+            } else {
+                alert(result.error);
+            }
+        }
+
+        async function stopCapture() {
+            const response = await fetch('/stop', { method: 'POST' });
+            const result = await response.json();
+            if (response.ok) {
+                clearInterval(captureInterval);
+                statusText.textContent = "Capture stopped.";
+            } else {
+                alert(result.error);
+            }
+        }
+
+        async function checkStatus() {
+            const response = await fetch('/status');
+            const result = await response.json();
+
+            if (result.status === "limit_reached") {
+                clearInterval(captureInterval);
+                notification.textContent = "Capture limit of 50 images reached!";
+                stopCapture();
+            } else if (result.status === "capturing") {
+                statusText.textContent = `Capturing... ${result.count} images captured.`;
+            }
+        }
+    </script>
+</body>
+</html>
