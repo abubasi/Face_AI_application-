@@ -4,6 +4,8 @@ import numpy as np
 import os
 import threading
 import logging
+from urllib.parse import quote  # Instead of werkzeug.urls.url_quote
+
 
 # Initialize Flask app
 app = Flask(__name__)
